@@ -16,6 +16,7 @@ import (
 	"github.com/hashicorp/aws-sdk-go/gen/s3"
 
 	awsSDK "github.com/awslabs/aws-sdk-go/aws"
+	awsASG "github.com/awslabs/aws-sdk-go/service/autoscaling"
 	awsEC2 "github.com/awslabs/aws-sdk-go/service/ec2"
 )
 
@@ -30,6 +31,7 @@ type AWSClient struct {
 	ec2conn         *ec2.EC2
 	elbconn         *elb.ELB
 	autoscalingconn *autoscaling.AutoScaling
+	asgconn         *awsASG.AutoScaling
 	s3conn          *s3.S3
 	r53conn         *route53.Route53
 	region          string
@@ -80,6 +82,12 @@ func (c *Config) Client() (interface{}, error) {
 
 		sdkCreds := awsSDK.DetectCreds(c.AccessKey, c.SecretKey, c.Token)
 		client.ec2SDKconn = awsEC2.New(&awsSDK.Config{
+			Credentials: sdkCreds,
+			Region:      c.Region,
+		})
+
+		log.Println("[INFO] Initializing AutoScaling SDK connection")
+		client.asgconn = awsASG.New(&awsSDK.Config{
 			Credentials: sdkCreds,
 			Region:      c.Region,
 		})
